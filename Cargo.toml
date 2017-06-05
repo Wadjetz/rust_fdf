@@ -1,0 +1,11 @@
+[package]
+name = "rust_fdf"
+version = "0.0.1"
+authors = ["Wadjetz <egor.neon@gmail.com>"]
+
+[dependencies]
+walkdir = "1.0.7"
+ring = "0.9.7"
+find_folder = "0.3.0"
+log = "0.3.8"
+clap = "2.24.2"
