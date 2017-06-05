@@ -66,8 +66,34 @@ fn main() {
                 }
                 acc
             });
+
+        let stdin = std::io::stdin();
+        let mut stdin = stdin.lock();
+
         for (_key, value) in index.iter().filter(|key| key.1.len() > 1) {
-            println!("{:?}", value.iter().map(|i| i.dir_entry.path()).collect::<Vec<_>>())
+            println!("Which file to delete ? select the index, or other character for pass");
+            for (i, file) in value.iter().enumerate() {
+                println!("{} {:?}", i, file.dir_entry.path());
+            }
+            let mut stdin_buffer = String::new();
+            if let Ok(_) = stdin.read_line(&mut stdin_buffer) {
+                println!("Number selected {}", stdin_buffer);
+                match stdin_buffer.trim().parse::<usize>() {
+                    Ok(number) => {
+                        if let Some(f) = value.get(number) {
+                            match std::fs::remove_file(f.dir_entry.path().as_os_str()) {
+                                Ok(_) => println!("{:?} deleted", f.dir_entry.path()),
+                                Err(e) => println!("Can't delete file {}", e)
+                            }
+                        } else {
+                            println!("Wrong selection");
+                        }
+                    },
+                    Err(e) => {
+                        println!("Error parsing {}", e);
+                    }
+                }
+            }
         }
     }
 }
