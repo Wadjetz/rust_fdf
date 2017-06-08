@@ -77,10 +77,7 @@ fn main() {
                 match response.trim().parse::<usize>() {
                     Ok(number) => {
                         if let Some(f) = value.get(number) {
-                            match std::fs::remove_file(f.dir_entry.path().as_os_str()) {
-                                Ok(_) => println!("{:?} deleted", f.dir_entry.path()),
-                                Err(e) => println!("Can't delete file {}", e)
-                            }
+                            delete_file(f.dir_entry.path())
                         } else {
                             println!("Wrong selection");
                         }
@@ -100,6 +97,13 @@ pub fn get_response() -> Result<String, std::io::Error> {
     let mut stdin_buffer = String::new();
     stdin.read_line(&mut stdin_buffer)
          .map(|_| stdin_buffer)
+}
+
+pub fn delete_file(path: &Path) {
+    match std::fs::remove_file(path.as_os_str()) {
+        Ok(_) => println!("{:?} deleted", path),
+        Err(e) => println!("Can't delete file {}", e)
+    }
 }
 
 pub fn hash(content: &[u8]) -> String {
