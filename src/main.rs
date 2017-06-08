@@ -67,18 +67,14 @@ fn main() {
                 acc
             });
 
-        let stdin = std::io::stdin();
-        let mut stdin = stdin.lock();
-
         for (_key, value) in index.iter().filter(|key| key.1.len() > 1) {
             println!("Which file to delete ? select the index, or other character for pass");
             for (i, file) in value.iter().enumerate() {
                 println!("{} {:?}", i, file.dir_entry.path());
             }
-            let mut stdin_buffer = String::new();
-            if let Ok(_) = stdin.read_line(&mut stdin_buffer) {
-                println!("Number selected {}", stdin_buffer);
-                match stdin_buffer.trim().parse::<usize>() {
+            if let Ok(response) = get_response() {
+                println!("Number selected {}", response);
+                match response.trim().parse::<usize>() {
                     Ok(number) => {
                         if let Some(f) = value.get(number) {
                             match std::fs::remove_file(f.dir_entry.path().as_os_str()) {
@@ -96,6 +92,14 @@ fn main() {
             }
         }
     }
+}
+
+pub fn get_response() -> Result<String, std::io::Error> {
+    let stdin = std::io::stdin();
+    let mut stdin = stdin.lock();
+    let mut stdin_buffer = String::new();
+    stdin.read_line(&mut stdin_buffer)
+         .map(|_| stdin_buffer)
 }
 
 pub fn hash(content: &[u8]) -> String {
