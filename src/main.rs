@@ -23,8 +23,8 @@ pub struct FileIndex {
 
 impl FileIndex {
     pub fn new(dir_entry: DirEntry) -> Self {
-        let metadata = std::fs::metadata(dir_entry.path()).ok();
-        FileIndex { dir_entry, metadata }
+        //let metadata = std::fs::metadata(dir_entry.path()).ok();
+        FileIndex { dir_entry, metadata: None }
     }
 }
 
