@@ -10,6 +10,7 @@ use std::fs::Metadata;
 use std::path::Path;
 use std::io::BufReader;
 use std::io::prelude::*;
+use std::io::Error;
 use std::collections::HashMap;
 
 extern crate clap;
@@ -107,7 +108,7 @@ pub fn get_directories(path: &Path) -> Vec<DirEntry> {
         .collect()
 }
 
-pub fn get_response() -> Result<String, std::io::Error> {
+pub fn get_response() -> Result<String, Error> {
     let stdin = std::io::stdin();
     let mut stdin = stdin.lock();
     let mut stdin_buffer = String::new();
@@ -130,15 +131,15 @@ pub fn hash(content: &[u8]) -> String {
         .collect()
 }
 
-pub fn get_file_content(file: &File) -> Result<Vec<u8>, std::io::Error> {
+pub fn get_file_content(file: &File) -> Result<Vec<u8>, Error> {
     let mut read_buffer = BufReader::new(file);
     let mut buffer = Vec::new();
     read_buffer.read_to_end(&mut buffer)?;
     Ok(buffer)
 }
 
-pub fn hash_file(file_path: &Path) -> Result<String, std::io::Error> {
-    let file = File::open(file_path).expect(&format!("File not found {:?}", file_path));
-    get_file_content(&file)
+pub fn hash_file(file_path: &Path) -> Result<String, Error> {
+    File::open(file_path)
+        .and_then(|file| get_file_content(&file))
         .map(|content| hash(&content))
 }
