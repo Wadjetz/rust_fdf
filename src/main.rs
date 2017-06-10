@@ -64,7 +64,7 @@ fn main() {
         let directories_paths: Vec<&str> = directories.collect();
         let files_index: Vec<FileIndex> = directories_paths.par_iter()
             .map(Path::new)
-            .flat_map(get_directories)
+            .flat_map(get_directories_entries)
             .map(|d| {
                 let hash = hash_file(d.path()).unwrap();
                 FileIndex::new(hash, d)
@@ -102,7 +102,7 @@ fn main() {
     };
 }
 
-pub fn get_directories(path: &Path) -> Vec<DirEntry> {
+pub fn get_directories_entries(path: &Path) -> Vec<DirEntry> {
     WalkDir::new(path).into_iter()
         .filter_map(|r| r.ok())
         .filter(|f| f.file_type().is_file())
