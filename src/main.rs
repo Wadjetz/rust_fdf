@@ -38,6 +38,7 @@ fn main() {
             .long("dir")
             .takes_value(true)
             .required(true)
+            .multiple(true)
             .validator(|value| {
                 let path = Path::new(&value);
                 if path.exists() {
@@ -53,8 +54,10 @@ fn main() {
             .help("test")
         ).get_matches();
     
-    if let Some(directory) = matches.value_of("directory").map(Path::new) {
-        let index = get_directories(directory).into_iter()
+    if let Some(directories) = matches.values_of("directory") {
+        let index = directories
+            .map(Path::new)
+            .flat_map(get_directories)
             .fold(HashMap::new(), |mut acc, file_index| {
                 let hash = get_hash(file_index.dir_entry.path());
                 {
@@ -63,7 +66,7 @@ fn main() {
                 }
                 acc
             });
-
+        
         for (_key, value) in index.iter().filter(|key| key.1.len() > 1) {
             println!("Which file to delete ? select the index, or other character for pass");
             for (i, file) in value.iter().enumerate() {
@@ -85,7 +88,7 @@ fn main() {
                 }
             }
         }
-    }
+    };
 }
 
 pub fn get_directories(path: &Path) -> Vec<FileIndex> {
