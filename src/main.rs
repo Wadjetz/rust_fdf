@@ -64,7 +64,7 @@ fn main() {
             .map(Path::new)
             .flat_map(get_directories)
             .map(|d| {
-                let hash = get_hash(d.path());
+                let hash = hash_file(d.path()).unwrap();
                 FileIndex::new(hash, d)
             }).collect();
 
@@ -137,8 +137,8 @@ pub fn get_file_content(file: &File) -> Result<Vec<u8>, std::io::Error> {
     Ok(buffer)
 }
 
-pub fn get_hash(path: &Path) -> String {
-    let file = File::open(path).expect(&format!("File not found {:?}", path));
-    let content = get_file_content(&file).unwrap();
-    hash(&content)
+pub fn hash_file(file_path: &Path) -> Result<String, std::io::Error> {
+    let file = File::open(file_path).expect(&format!("File not found {:?}", file_path));
+    get_file_content(&file)
+        .map(|content| hash(&content))
 }
