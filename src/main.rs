@@ -130,7 +130,7 @@ pub fn hash(content: &[u8]) -> String {
         .collect()
 }
 
-pub fn file_content(file: &File) -> Result<Vec<u8>, std::io::Error> {
+pub fn get_file_content(file: &File) -> Result<Vec<u8>, std::io::Error> {
     let mut read_buffer = BufReader::new(file);
     let mut buffer = Vec::new();
     read_buffer.read_to_end(&mut buffer)?;
@@ -139,6 +139,6 @@ pub fn file_content(file: &File) -> Result<Vec<u8>, std::io::Error> {
 
 pub fn get_hash(path: &Path) -> String {
     let file = File::open(path).expect(&format!("File not found {:?}", path));
-    let content = file_content(&file).unwrap();
+    let content = get_file_content(&file).unwrap();
     hash(&content)
 }
