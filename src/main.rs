@@ -124,9 +124,10 @@ pub fn delete_file(path: &Path) {
 
 pub fn hash(content: &[u8]) -> String {
     let hasher = digest::digest(&digest::SHA1, content);
-    let hash = hasher.as_ref();
-    let vec_hash = Vec::from(hash);
-    vec_hash.iter().map(|b| format!("{:x}", b)).collect()
+    Vec::from(hasher.as_ref())
+        .iter()
+        .map(|b| format!("{:x}", b))
+        .collect()
 }
 
 pub fn file_content(file: &File) -> Result<Vec<u8>, std::io::Error> {
