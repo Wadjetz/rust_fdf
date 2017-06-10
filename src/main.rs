@@ -15,16 +15,20 @@ use std::collections::HashMap;
 extern crate clap;
 use clap::{Arg, App, AppSettings};
 
+extern crate rayon;
+use rayon::prelude::*;
+
 #[derive(Debug)]
 pub struct FileIndex {
+    pub hash: String,
     pub dir_entry: DirEntry,
     pub metadata: Option<Metadata>
 }
 
 impl FileIndex {
-    pub fn new(dir_entry: DirEntry) -> Self {
+    pub fn new(hash: String, dir_entry: DirEntry) -> Self {
         //let metadata = std::fs::metadata(dir_entry.path()).ok();
-        FileIndex { dir_entry, metadata: None }
+        FileIndex { hash, dir_entry, metadata: None }
     }
 }
 
@@ -55,13 +59,18 @@ fn main() {
         ).get_matches();
     
     if let Some(directories) = matches.values_of("directory") {
-        let index = directories
+        let directories_paths: Vec<&str> = directories.collect();
+        let files_index: Vec<FileIndex> = directories_paths.par_iter()
             .map(Path::new)
             .flat_map(get_directories)
-            .fold(HashMap::new(), |mut acc, file_index| {
-                let hash = get_hash(file_index.dir_entry.path());
+            .map(|d| {
+                let hash = get_hash(d.path());
+                FileIndex::new(hash, d)
+            }).collect();
+
+        let index = files_index.iter().fold(HashMap::new(), |mut acc, file_index| {
                 {
-                    let entry = acc.entry(hash).or_insert(Vec::new());
+                    let entry = acc.entry(file_index.hash.clone()).or_insert(Vec::new());
                     entry.push(file_index);
                 }
                 acc
@@ -91,11 +100,10 @@ fn main() {
     };
 }
 
-pub fn get_directories(path: &Path) -> Vec<FileIndex> {
+pub fn get_directories(path: &Path) -> Vec<DirEntry> {
     WalkDir::new(path).into_iter()
         .filter_map(|r| r.ok())
         .filter(|f| f.file_type().is_file())
-        .map(FileIndex::new)
         .collect()
 }
 
