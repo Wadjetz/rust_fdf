@@ -10,7 +10,8 @@ use std::fs::Metadata;
 use std::path::Path;
 use std::io::BufReader;
 use std::io::prelude::*;
-use std::io::Error;
+use std::io::Error as IOError;
+use std::error::Error;
 use std::collections::HashMap;
 
 extern crate clap;
@@ -108,7 +109,7 @@ pub fn get_directories(path: &Path) -> Vec<DirEntry> {
         .collect()
 }
 
-pub fn get_response() -> Result<String, Error> {
+pub fn get_response() -> Result<String, IOError> {
     let stdin = std::io::stdin();
     let mut stdin = stdin.lock();
     let mut stdin_buffer = String::new();
@@ -119,7 +120,7 @@ pub fn get_response() -> Result<String, Error> {
 pub fn delete_file(path: &Path) {
     match std::fs::remove_file(path.as_os_str()) {
         Ok(_) => println!("{:?} deleted", path),
-        Err(e) => println!("Can't delete file {}", e)
+        Err(e) => println!("Can't delete file {}", e.description())
     }
 }
 
@@ -131,14 +132,14 @@ pub fn hash(content: &[u8]) -> String {
         .collect()
 }
 
-pub fn get_file_content(file: &File) -> Result<Vec<u8>, Error> {
+pub fn get_file_content(file: &File) -> Result<Vec<u8>, IOError> {
     let mut read_buffer = BufReader::new(file);
     let mut buffer = Vec::new();
     read_buffer.read_to_end(&mut buffer)?;
     Ok(buffer)
 }
 
-pub fn hash_file(file_path: &Path) -> Result<String, Error> {
+pub fn hash_file(file_path: &Path) -> Result<String, IOError> {
     File::open(file_path)
         .and_then(|file| get_file_content(&file))
         .map(|content| hash(&content))
