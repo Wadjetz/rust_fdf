@@ -70,15 +70,15 @@ fn main() {
                 FileIndex::new(hash, d)
             }).collect();
 
-        let index = files_index.iter().fold(HashMap::new(), |mut acc, file_index| {
-                {
-                    let entry = acc.entry(file_index.hash.clone()).or_insert(Vec::new());
-                    entry.push(file_index);
-                }
-                acc
-            });
+        let files_index = files_index.iter().fold(HashMap::new(), |mut acc, file_index| {
+            {
+                let entry = acc.entry(file_index.hash.clone()).or_insert(Vec::new());
+                entry.push(file_index);
+            }
+            acc
+        });
         
-        for (_key, value) in index.iter().filter(|key| key.1.len() > 1) {
+        for (_, value) in files_index.iter().filter(|key| key.1.len() > 1) {
             println!("Which file to delete ? select the index, or other character for pass");
             for (i, file) in value.iter().enumerate() {
                 println!("{} {:?}", i, file.dir_entry.path());
