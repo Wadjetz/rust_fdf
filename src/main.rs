@@ -54,10 +54,7 @@ fn main() {
         ).get_matches();
     
     if let Some(directory) = matches.value_of("directory").map(Path::new) {
-        let index = WalkDir::new(directory).into_iter()
-            .filter_map(|r| r.ok())
-            .filter(|f| f.file_type().is_file())
-            .map(FileIndex::new)
+        let index = get_directories(directory).into_iter()
             .fold(HashMap::new(), |mut acc, file_index| {
                 let hash = get_hash(file_index.dir_entry.path());
                 {
@@ -89,6 +86,14 @@ fn main() {
             }
         }
     }
+}
+
+pub fn get_directories(path: &Path) -> Vec<FileIndex> {
+    WalkDir::new(path).into_iter()
+        .filter_map(|r| r.ok())
+        .filter(|f| f.file_type().is_file())
+        .map(FileIndex::new)
+        .collect()
 }
 
 pub fn get_response() -> Result<String, std::io::Error> {
