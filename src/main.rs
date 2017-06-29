@@ -1,6 +1,3 @@
-extern crate ring;
-use ring::digest;
-
 extern crate walkdir;
 use walkdir::WalkDir;
 use walkdir::DirEntry;
@@ -13,6 +10,10 @@ use std::io::prelude::*;
 use std::io::Error as IOError;
 use std::error::Error;
 use std::collections::HashMap;
+
+extern crate crypto;
+use crypto::digest::Digest;
+use crypto::sha1::Sha1;
 
 extern crate clap;
 use clap::{Arg, App, AppSettings};
@@ -59,7 +60,7 @@ fn main() {
             })
             .help("test")
         ).get_matches();
-    
+
     if let Some(directories) = matches.values_of("directory") {
         let directories_paths: Vec<&str> = directories.collect();
         let files_index: Vec<FileIndex> = directories_paths.par_iter()
@@ -77,7 +78,7 @@ fn main() {
             }
             acc
         });
-        
+
         for (_, value) in files_index.iter().filter(|key| key.1.len() > 1) {
             println!("Which file to delete ? select the index, or other character for pass");
             for (i, file) in value.iter().enumerate() {
@@ -124,23 +125,24 @@ pub fn delete_file(path: &Path) {
     }
 }
 
-pub fn hash(content: &[u8]) -> String {
-    let hasher = digest::digest(&digest::SHA1, content);
-    Vec::from(hasher.as_ref())
-        .iter()
-        .map(|b| format!("{:x}", b))
-        .collect()
-}
-
-pub fn get_file_content(file: &File) -> Result<Vec<u8>, IOError> {
-    let mut read_buffer = BufReader::new(file);
-    let mut buffer = Vec::new();
-    read_buffer.read_to_end(&mut buffer)?;
-    Ok(buffer)
-}
-
-pub fn hash_file(file_path: &Path) -> Result<String, IOError> {
-    File::open(file_path)
-        .and_then(|file| get_file_content(&file))
-        .map(|content| hash(&content))
+fn hash_file(path: &Path) -> Result<String, IOError> {
+    const BUFF_SIZE: usize = 1024;
+    let file = File::open(path)?;
+    let mut hasher = Sha1::new();
+    let mut reader = BufReader::new(file);
+    let mut buffer = [0; BUFF_SIZE];
+    loop {
+        match reader.read(&mut buffer) {
+            Ok(0) => break,
+            Ok(readed) if readed == BUFF_SIZE => {
+                hasher.input(&buffer);
+            },
+            Ok(readed) => {
+                hasher.input(&buffer[0..readed]);
+            },
+            Err(err) => return Err(err)
+        }
+    }
+    let hash = hasher.result_str();
+    Ok(hash)
 }
