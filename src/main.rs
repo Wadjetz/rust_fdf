@@ -134,9 +134,6 @@ fn hash_file(path: &Path) -> Result<String, IOError> {
     loop {
         match reader.read(&mut buffer) {
             Ok(0) => break,
-            Ok(readed) if readed == BUFF_SIZE => {
-                hasher.input(&buffer);
-            },
             Ok(readed) => {
                 hasher.input(&buffer[0..readed]);
             },
