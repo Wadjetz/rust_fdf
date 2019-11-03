@@ -2,9 +2,10 @@
 name = "rust_fdf"
 version = "0.1.0"
 authors = ["Wadjetz <egor.neon@gmail.com>"]
+edition = "2018"
 
 [dependencies]
-walkdir = "1.0.7"
+walkdir = "2.2.9"
 rust-crypto = "0.2.36"
-clap = "2.25.0"
-rayon = "0.8.2"
+clap = "2.33.0"
+rayon = "1.2.0"
